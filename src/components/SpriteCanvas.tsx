@@ -305,9 +305,7 @@ export function SpriteCanvas({
         onPointerCancel={onLostPointerCapture}
         onLostPointerCapture={onLostPointerCapture}
       />
-      <p className="sprite-canvas-hint">
-        滚轮缩放 · 左键点选格子 · 拖拽或中键 / Alt+拖拽平移
-      </p>
+      <p className="sprite-canvas-hint">滚轮缩放 · 点选 · 平移 · ←/→ 换帧</p>
     </div>
   )
 }

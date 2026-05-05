@@ -2,6 +2,8 @@
   --canvas-bg: #0d0e12;
   --panel: color-mix(in srgb, var(--bg) 92%, var(--text-h) 8%);
   --panel-border: var(--border);
+  --sprite-radius: 10px;
+  --sprite-radius-sm: 8px;
   flex: 1;
   min-height: 0;
   width: 100%;
@@ -12,25 +14,23 @@
 }
 
 .sprite-studio__header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px 24px;
-  padding: 16px 20px;
+  flex-shrink: 0;
+  padding: 18px 22px 20px;
   border-bottom: 1px solid var(--panel-border);
+  background: color-mix(in srgb, var(--bg) 96%, var(--text) 4%);
 }
 
-.sprite-studio__header h1 {
-  font-size: 1.25rem;
+.sprite-studio__header-inner {
+  max-width: 56rem;
+}
+
+.sprite-studio__title {
   margin: 0;
-  letter-spacing: -0.02em;
-}
-
-.sprite-studio__header p {
-  margin: 4px 0 0;
-  font-size: 0.85rem;
-  max-width: 42em;
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+  color: var(--text-h);
 }
 
 .sprite-studio__body {
@@ -49,12 +49,17 @@
     grid-template-columns: 1fr;
     grid-template-rows: auto minmax(0, 1fr) auto;
   }
+
+  .sprite-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 
 .sprite-panel {
   border-right: 1px solid var(--panel-border);
   background: var(--panel);
-  padding: 16px;
+  padding: 16px 14px 18px;
   overflow-x: hidden;
   overflow-y: auto;
   display: flex;
@@ -62,7 +67,6 @@
   gap: 14px;
   min-height: 0;
   max-height: 100%;
-  /* 不与画布列强行等高，避免上传区在窄列里被「撑满一屏」、文案乱换行 */
   align-self: start;
 }
 
@@ -73,13 +77,54 @@
   }
 }
 
-.sprite-panel h2 {
-  font-size: 0.75rem;
+.sprite-panel__card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--sprite-radius);
+  padding: 14px 14px 12px;
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--text-h) 6%, transparent);
+}
+
+.sprite-panel__title {
+  margin: 0 0 10px;
+  font-size: 0.7rem;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin: 0 0 6px;
+  letter-spacing: 0.1em;
+  color: var(--text-h);
+  opacity: 0.72;
+}
+
+.sprite-panel__actions {
+  margin-top: 4px;
+}
+
+.sprite-file-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 12px;
+  margin-top: 10px;
+  padding: 8px 10px;
+  border-radius: var(--sprite-radius-sm);
+  background: color-mix(in srgb, var(--panel) 65%, var(--bg) 35%);
+  border: 1px solid var(--border);
+  font-size: 0.8rem;
+}
+
+.sprite-file-meta__name {
+  color: var(--text-h);
+  font-weight: 500;
+  word-break: break-all;
+}
+
+.sprite-file-meta__dim {
+  font-family: var(--mono);
+  font-size: 0.78rem;
   color: var(--text);
   opacity: 0.85;
+  flex-shrink: 0;
 }
 
 .sprite-field {
@@ -150,11 +195,6 @@
   font-weight: 500;
 }
 
-.sprite-drop__hint {
-  font-size: 0.8rem;
-  opacity: 0.75;
-}
-
 .sprite-row {
   display: flex;
   flex-wrap: wrap;
@@ -183,6 +223,11 @@
   color: var(--text-h);
 }
 
+.sprite-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .sprite-check {
   display: flex;
   align-items: center;
@@ -198,6 +243,7 @@
   min-width: 0;
   height: 100%;
   align-self: stretch;
+  background: var(--bg);
 }
 
 .sprite-canvas-wrap {
@@ -205,6 +251,7 @@
   min-height: 0;
   position: relative;
   background: var(--canvas-bg);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text-h) 12%, transparent);
 }
 
 .sprite-canvas {
@@ -231,58 +278,127 @@
 .sprite-toolbar {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  padding: 10px 12px;
-  border-top: 1px solid var(--panel-border);
   align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  padding: 10px 14px 12px;
+  border-top: 1px solid var(--panel-border);
+  background: color-mix(in srgb, var(--panel) 35%, var(--bg) 65%);
   font-size: 0.85rem;
+}
+
+.sprite-toolbar__start {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.sprite-toolbar__meta {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--text);
+  opacity: 0.75;
 }
 
 .sprite-warn {
   color: #f59e0b;
   font-size: 0.8rem;
-  margin: 0;
+  margin: 10px 0 0;
 }
 
 .sprite-filmstrip {
   grid-column: 1 / -1;
   border-top: 1px solid var(--panel-border);
-  background: var(--panel);
-  padding: 12px 16px 16px;
+  background: color-mix(in srgb, var(--panel) 88%, var(--bg) 12%);
+  padding: 8px 12px 10px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   flex-shrink: 0;
   min-width: 0;
 }
 
-.sprite-filmstrip__head {
+.sprite-filmstrip__bar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px 16px;
+  justify-content: flex-start;
+  gap: 8px 12px;
 }
 
-.sprite-filmstrip__head h2 {
+.sprite-filmstrip__heading {
   margin: 0;
-  line-height: 1.25;
+  flex: 0 0 auto;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  line-height: 1;
+  color: var(--text-h);
+  opacity: 0.65;
+  padding-right: 4px;
+  border-right: 1px solid var(--border);
+  margin-right: 2px;
+}
+
+.sprite-filmstrip__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.sprite-filmstrip__rail {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding-top: 2px;
+  border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+}
+
+.sprite-filmstrip__rail-meta {
+  flex: 0 0 auto;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--text);
+  opacity: 0.75;
+  white-space: nowrap;
+  max-width: 7.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sprite-filmstrip__rail .sprite-filmstrip__frames {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.sprite-filmstrip__rail .sprite-filmstrip__empty {
+  flex: 1;
 }
 
 .sprite-filmstrip__frames {
   display: flex;
-  gap: 6px;
+  gap: 5px;
   overflow-x: auto;
-  padding-block: 4px;
+  padding: 2px 0 4px;
+  margin: 0;
   align-items: center;
+  scroll-snap-type: x proximity;
+  scrollbar-gutter: stable;
 }
 
 .sprite-thumb {
   flex: 0 0 auto;
-  width: 56px;
-  height: 56px;
-  border: 2px solid transparent;
-  border-radius: 6px;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border);
+  border-radius: var(--sprite-radius-sm);
   overflow: hidden;
   background: var(--canvas-bg);
   cursor: pointer;
@@ -291,10 +407,24 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  scroll-snap-align: start;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.sprite-thumb:hover {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+}
+
+.sprite-thumb:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .sprite-thumb--on {
   border-color: var(--accent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
 .sprite-thumb canvas {
@@ -309,15 +439,8 @@
   image-rendering: crisp-edges;
 }
 
-.sprite-preview {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-/* 播放条：标签与数字框横排，避免「FPS」竖排文案把整列撑高、与按钮错位 */
-.sprite-preview .sprite-field {
+/* 胶片条工具行：标签与数字框横排 */
+.sprite-filmstrip__controls .sprite-field {
   flex-direction: row;
   align-items: center;
   align-self: center;
@@ -325,13 +448,13 @@
   margin: 0;
 }
 
-.sprite-preview .sprite-field > span {
+.sprite-filmstrip__controls .sprite-field > span {
   flex-shrink: 0;
   white-space: nowrap;
-  font-size: 0.8rem;
+  font-size: 0.74rem;
 }
 
-.sprite-preview .sprite-field input[type='number'] {
+.sprite-filmstrip__controls .sprite-field input[type='number'] {
   width: auto;
   min-width: 2.75rem;
   max-width: 4.5rem;
@@ -343,15 +466,17 @@
 
 .sprite-preview-col {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex-shrink: 0;
 }
 
 .sprite-preview-col .sprite-btn {
-  align-self: stretch;
+  align-self: center;
   text-align: center;
+  padding: 5px 10px;
+  font-size: 0.8rem;
 }
 
 .sprite-preview-col .sprite-btn:disabled {
@@ -369,11 +494,11 @@
 }
 
 .sprite-preview-box {
-  width: 96px;
-  height: 96px;
+  width: 64px;
+  height: 64px;
   flex: 0 0 auto;
   background: var(--canvas-bg);
-  border-radius: 8px;
+  border-radius: 6px;
   border: 1px solid var(--border);
   box-sizing: border-box;
   overflow: hidden;
@@ -398,4 +523,18 @@
 .sprite-muted {
   opacity: 0.55;
   font-size: 0.82rem;
+}
+
+.sprite-muted code {
+  font-size: 0.88em;
+}
+
+.sprite-filmstrip__empty {
+  margin: 0;
+  padding: 8px 6px;
+  text-align: center;
+  font-size: 0.76rem;
+  border-radius: 6px;
+  border: 1px dashed var(--border);
+  background: color-mix(in srgb, var(--bg) 70%, var(--panel) 30%);
 }

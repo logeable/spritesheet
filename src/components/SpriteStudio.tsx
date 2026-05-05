@@ -31,6 +31,31 @@ function clamp(n: number, lo: number, hi: number) {
   return Math.min(hi, Math.max(lo, n))
 }
 
+/** 焦点在可编辑数字/文本等控件上时不抢左右键（用于逐帧切换） */
+function allowArrowFrameNav(target: EventTarget | null): boolean {
+  const el = target instanceof HTMLElement ? target : null
+  if (!el) return true
+  if (el.isContentEditable) return false
+  const tag = el.tagName
+  if (tag === 'TEXTAREA' || tag === 'SELECT') return false
+  if (tag === 'INPUT') {
+    const t = (el as HTMLInputElement).type
+    if (
+      t === 'checkbox' ||
+      t === 'radio' ||
+      t === 'range' ||
+      t === 'file' ||
+      t === 'button' ||
+      t === 'submit' ||
+      t === 'reset'
+    ) {
+      return true
+    }
+    return false
+  }
+  return true
+}
+
 function useObjectUrl(file: File | null) {
   const [url, setUrl] = useState<string | null>(null)
   useEffect(() => {
@@ -68,8 +93,10 @@ export default function SpriteStudio() {
   const lastTickRef = useRef(0)
   const rowFrameCountsRef = useRef(rowFrameCounts)
   const selectedRowRef = useRef(selectedRow)
+  const selectedColRef = useRef(selectedCol)
   rowFrameCountsRef.current = rowFrameCounts
   selectedRowRef.current = selectedRow
+  selectedColRef.current = selectedCol
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -207,6 +234,26 @@ export default function SpriteStudio() {
   }, [selectedRow, rowFrameCounts, grid.colCount])
 
   useEffect(() => {
+    if (!image) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
+      if (!allowArrowFrameNav(e.target)) return
+      if (e.altKey || e.metaKey || e.ctrlKey) return
+      e.preventDefault()
+      const delta = e.key === 'ArrowRight' ? 1 : -1
+      const row = selectedRowRef.current
+      const n = rowFrameCountsRef.current[row] ?? grid.colCount
+      const cap = Math.max(1, n)
+      const next = clamp(selectedColRef.current + delta, 0, cap - 1)
+      setSelectedCol(next)
+      setPlayFrame(next)
+      setPlaying(false)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [image, grid.colCount])
+
+  useEffect(() => {
     if (!playing || !image) {
       if (playRef.current) cancelAnimationFrame(playRef.current)
       playRef.current = null
@@ -280,22 +327,21 @@ export default function SpriteStudio() {
   const baseName =
     file?.name.replace(/\.[^.]+$/, '') ?? 'spritesheet'
 
+  const rowFrameN =
+    rowFrameCounts[selectedRow] ?? grid.colCount
+
   return (
     <div className="sprite-studio">
       <header className="sprite-studio__header">
-        <div>
-          <h1>Spritesheet 工作台</h1>
-          <p>
-            面向「每行一条动作、横向多帧」的均匀网格：校对尺寸、预览动画、导出单帧或整行
-            PNG，并生成 JSON 清单便于引擎接入。
-          </p>
+        <div className="sprite-studio__header-inner">
+          <h1 className="sprite-studio__title">Spritesheet 工作台</h1>
         </div>
       </header>
 
       <div className="sprite-studio__body">
         <aside className="sprite-panel">
-          <section>
-            <h2>贴图</h2>
+          <section className="sprite-panel__card">
+            <h2 className="sprite-panel__title">贴图</h2>
             <label
               className={`sprite-drop ${dragOver ? 'sprite-drop--active' : ''}`}
               onDragOver={(e) => {
@@ -315,20 +361,22 @@ export default function SpriteStudio() {
                 accept="image/webp,image/png,image/*"
                 onChange={(e) => onFiles(e.target.files)}
               />
-              <span className="sprite-drop__line">拖拽到此处或点击选择</span>
-              <span className="sprite-drop__hint">WebP、PNG 等栅格图</span>
+              <span className="sprite-drop__line">拖拽或点击选择图片</span>
             </label>
             {image && (
-              <p className="sprite-muted">
-                {file?.name ?? '远程/URL'}
-                <br />
-                {imgW} × {imgH}px
-              </p>
+              <div className="sprite-file-meta" aria-live="polite">
+                <span className="sprite-file-meta__name">
+                  {file?.name ?? '远程/URL'}
+                </span>
+                <span className="sprite-file-meta__dim">
+                  {imgW} × {imgH}px
+                </span>
+              </div>
             )}
           </section>
 
-          <section>
-            <h2>网格</h2>
+          <section className="sprite-panel__card">
+            <h2 className="sprite-panel__title">网格</h2>
             <div className="sprite-grid2">
               <div className="sprite-field">
                 <label htmlFor="cw">单元宽</label>
@@ -421,7 +469,7 @@ export default function SpriteStudio() {
                 />
               </div>
               <div className="sprite-field">
-                <label htmlFor="cols">列数（网格列上限）</label>
+                <label htmlFor="cols">列数</label>
                 <input
                   id="cols"
                   type="number"
@@ -436,7 +484,7 @@ export default function SpriteStudio() {
                 />
               </div>
               <div className="sprite-field">
-                <label htmlFor="rows">行数（动作条数）</label>
+                <label htmlFor="rows">行数</label>
                 <input
                   id="rows"
                   type="number"
@@ -451,7 +499,7 @@ export default function SpriteStudio() {
                 />
               </div>
             </div>
-            <div className="sprite-row" style={{ marginTop: 10 }}>
+            <div className="sprite-row sprite-panel__actions">
               <button
                 type="button"
                 className="sprite-btn sprite-btn--primary"
@@ -488,20 +536,12 @@ export default function SpriteStudio() {
               </button>
             </div>
             {overflows && (
-              <p className="sprite-warn">
-                部分格子超出贴图边界，请检查原点、间距或行列数。
-              </p>
+              <p className="sprite-warn">网格超出贴图，请检查原点与行列。</p>
             )}
-            <p className="sprite-muted">
-              每行实际参与播放/导出的帧数可在下方「播放区域」按行单独设置（可少于列数）。
-            </p>
-            <p className="sprite-muted">
-              「按行列推算单元」：在 (原点→贴图右下) 的可用区域内，把剩余宽度按列数、高度按行数均分（扣除列/行间距），得到单元宽高。
-            </p>
           </section>
 
-          <section>
-            <h2>导出</h2>
+          <section className="sprite-panel__card">
+            <h2 className="sprite-panel__title">导出</h2>
             <div className="sprite-row">
               <button
                 type="button"
@@ -535,7 +575,7 @@ export default function SpriteStudio() {
                   )
                 }
               >
-                当前行动画（逐帧）
+                行逐帧 PNG
               </button>
               <button
                 type="button"
@@ -557,15 +597,10 @@ export default function SpriteStudio() {
                 JSON 清单
               </button>
             </div>
-            <p className="sprite-muted">
-              逐帧导出会短时间连续触发多次下载；可将 `spritesheet.webp` 放到{' '}
-              <code>public/</code> 后用 <code>?url=/spritesheet.webp</code>{' '}
-              打开。
-            </p>
           </section>
         </aside>
 
-        <main className="sprite-main">
+        <main className="sprite-main" aria-label="主画布">
           <SpriteCanvas
             image={image}
             grid={grid}
@@ -580,36 +615,37 @@ export default function SpriteStudio() {
             onWheelZoom={onWheelZoom}
           />
           <div className="sprite-toolbar">
-            <label className="sprite-check">
-              <input
-                type="checkbox"
-                checked={showGrid}
-                onChange={(e) => setShowGrid(e.target.checked)}
-              />
-              显示网格线
-            </label>
-            <button
-              type="button"
-              className="sprite-btn"
-              disabled={!image}
-              onClick={focusCenter}
-              title="保持当前缩放，将贴图中心对齐到画布中心"
-            >
-              聚焦中心
-            </button>
-            <span className="sprite-muted">
-              缩放 {zoom.toFixed(2)}× · 选中 行 {selectedRow} / 列{' '}
-              {selectedCol}
+            <div className="sprite-toolbar__start">
+              <label className="sprite-check">
+                <input
+                  type="checkbox"
+                  checked={showGrid}
+                  onChange={(e) => setShowGrid(e.target.checked)}
+                />
+                显示网格线
+              </label>
+              <button
+                type="button"
+                className="sprite-btn"
+                disabled={!image}
+                onClick={focusCenter}
+                title="保持当前缩放，将贴图中心对齐到画布中心"
+              >
+                聚焦中心
+              </button>
+            </div>
+            <span className="sprite-toolbar__meta" aria-live="polite">
+              缩放 {zoom.toFixed(2)}× · 行 {selectedRow} / 列 {selectedCol}
             </span>
           </div>
         </main>
 
-        <section className="sprite-filmstrip">
-          <div className="sprite-filmstrip__head">
-            <h2>当前行胶片条 · 播放预览</h2>
-            <div className="sprite-preview">
+        <section className="sprite-filmstrip" aria-label="胶片与播放">
+          <div className="sprite-filmstrip__bar">
+            <h2 className="sprite-filmstrip__heading">胶片</h2>
+            <div className="sprite-filmstrip__controls">
               <label className="sprite-field sprite-field--row-frames">
-                <span>当前行帧数</span>
+                <span>帧数</span>
                 <input
                   id="row-frame-count"
                   type="number"
@@ -670,18 +706,25 @@ export default function SpriteStudio() {
               </div>
             </div>
           </div>
-          <FilmstripRow
-            image={image}
-            grid={grid}
-            row={selectedRow}
-            frameCount={rowFrameCounts[selectedRow] ?? grid.colCount}
-            activeCol={playing ? playFrame : selectedCol}
-            onPick={(col) => {
-              setSelectedCol(col)
-              setPlayFrame(col)
-              setPlaying(false)
-            }}
-          />
+          <div className="sprite-filmstrip__rail">
+            {image ? (
+              <span className="sprite-filmstrip__rail-meta">
+                第 {selectedRow + 1} 行 · {rowFrameN} 帧
+              </span>
+            ) : null}
+            <FilmstripRow
+              image={image}
+              grid={grid}
+              row={selectedRow}
+              frameCount={rowFrameN}
+              activeCol={playing ? playFrame : selectedCol}
+              onPick={(col) => {
+                setSelectedCol(col)
+                setPlayFrame(col)
+                setPlaying(false)
+              }}
+            />
+          </div>
         </section>
       </div>
     </div>
@@ -704,7 +747,9 @@ function FilmstripRow({
   onPick: (col: number) => void
 }) {
   if (!image) {
-    return <p className="sprite-muted">加载贴图后显示该行所有帧缩略图。</p>
+    return (
+      <p className="sprite-muted sprite-filmstrip__empty">加载贴图后显示缩略图。</p>
+    )
   }
   const n = Math.max(1, frameCount)
   return (

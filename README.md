@@ -2,6 +2,10 @@
 
 在浏览器里打开一张精灵图（spritesheet），按均匀网格切分、浏览与导出单帧或整行动画帧。技术栈为 **React 19**、**TypeScript**、**Vite 8**。
 
+## 界面预览
+
+![Spritesheet 工作台界面](./preview.png)
+
 ## 功能概览
 
 - **贴图**：本地上传或 URL 加载 WebP/PNG 等。
