@@ -1,0 +1,401 @@
+.sprite-studio {
+  --canvas-bg: #0d0e12;
+  --panel: color-mix(in srgb, var(--bg) 92%, var(--text-h) 8%);
+  --panel-border: var(--border);
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  color: var(--text);
+}
+
+.sprite-studio__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px 24px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.sprite-studio__header h1 {
+  font-size: 1.25rem;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.sprite-studio__header p {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  max-width: 42em;
+}
+
+.sprite-studio__body {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(288px, 360px) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 0;
+  overflow: hidden;
+}
+
+@media (max-width: 900px) {
+  .sprite-studio__body {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+}
+
+.sprite-panel {
+  border-right: 1px solid var(--panel-border);
+  background: var(--panel);
+  padding: 16px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 0;
+  max-height: 100%;
+  /* 不与画布列强行等高，避免上传区在窄列里被「撑满一屏」、文案乱换行 */
+  align-self: start;
+}
+
+@media (max-width: 900px) {
+  .sprite-panel {
+    border-right: none;
+    border-bottom: 1px solid var(--panel-border);
+  }
+}
+
+.sprite-panel h2 {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 6px;
+  color: var(--text);
+  opacity: 0.85;
+}
+
+.sprite-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sprite-field label {
+  font-size: 0.8rem;
+}
+
+.sprite-field input[type='number'],
+.sprite-field input[type='text'] {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.sprite-grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.sprite-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 88px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  border: 2px dashed var(--border);
+  border-radius: 10px;
+  padding: 16px 12px;
+  text-align: center;
+  font-size: 0.88rem;
+  line-height: 1.35;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+
+.sprite-drop:hover,
+.sprite-drop--active {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+
+.sprite-drop input {
+  display: none;
+}
+
+.sprite-drop__line {
+  color: var(--text-h);
+  font-weight: 500;
+}
+
+.sprite-drop__hint {
+  font-size: 0.8rem;
+  opacity: 0.75;
+}
+
+.sprite-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.sprite-btn {
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+  cursor: pointer;
+}
+
+.sprite-btn:hover {
+  border-color: var(--accent-border);
+}
+
+.sprite-btn--primary {
+  background: var(--accent-bg);
+  border-color: var(--accent-border);
+  color: var(--text-h);
+}
+
+.sprite-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+
+.sprite-main {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  height: 100%;
+  align-self: stretch;
+}
+
+.sprite-canvas-wrap {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  background: var(--canvas-bg);
+}
+
+.sprite-canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.sprite-canvas-hint {
+  position: absolute;
+  bottom: 8px;
+  left: 10px;
+  right: 10px;
+  margin: 0;
+  font-size: 0.72rem;
+  opacity: 0.65;
+  pointer-events: none;
+}
+
+.sprite-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--panel-border);
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+.sprite-warn {
+  color: #f59e0b;
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+.sprite-filmstrip {
+  grid-column: 1 / -1;
+  border-top: 1px solid var(--panel-border);
+  background: var(--panel);
+  padding: 12px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.sprite-filmstrip__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 16px;
+}
+
+.sprite-filmstrip__head h2 {
+  margin: 0;
+  line-height: 1.25;
+}
+
+.sprite-filmstrip__frames {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-block: 4px;
+  align-items: center;
+}
+
+.sprite-thumb {
+  flex: 0 0 auto;
+  width: 56px;
+  height: 56px;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--canvas-bg);
+  cursor: pointer;
+  padding: 0;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sprite-thumb--on {
+  border-color: var(--accent);
+}
+
+.sprite-thumb canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: center;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.sprite-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* 播放条：标签与数字框横排，避免「FPS」竖排文案把整列撑高、与按钮错位 */
+.sprite-preview .sprite-field {
+  flex-direction: row;
+  align-items: center;
+  align-self: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.sprite-preview .sprite-field > span {
+  flex-shrink: 0;
+  white-space: nowrap;
+  font-size: 0.8rem;
+}
+
+.sprite-preview .sprite-field input[type='number'] {
+  width: auto;
+  min-width: 2.75rem;
+  max-width: 4.5rem;
+}
+
+.sprite-field--row-frames {
+  flex-shrink: 0;
+}
+
+.sprite-preview-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.sprite-preview-col .sprite-btn {
+  align-self: stretch;
+  text-align: center;
+}
+
+.sprite-preview-col .sprite-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* 预览区按钮与普通输入框一致，不用强调色描边 */
+.sprite-preview-col .sprite-btn.sprite-btn--primary {
+  border-color: var(--border);
+}
+
+.sprite-preview-col .sprite-btn:hover:not(:disabled) {
+  border-color: var(--border);
+}
+
+.sprite-preview-box {
+  width: 96px;
+  height: 96px;
+  flex: 0 0 auto;
+  background: var(--canvas-bg);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  box-sizing: border-box;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sprite-preview-box canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: center;
+  margin: 0;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.sprite-muted {
+  opacity: 0.55;
+  font-size: 0.82rem;
+}
